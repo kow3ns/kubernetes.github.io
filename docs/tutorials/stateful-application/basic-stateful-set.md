@@ -108,12 +108,11 @@ explore what this means in the context of the `web` Stateful Set.
 
 ##### Ordinal Index
 
-Above, when you got Stateful Set's Pods using
-[`kubectl get`](/docs/user-guide/kubectl/kubectl_get/), you saw two
-Pods, `web-0` and `web-1`. The Pods names take the form 
-`$(statefulset name)-$(ordinal index)`. The ordinal index, assinged by the 
-Stateful Set controller, is unique to the Pod, and it uniquely identifies the 
-Pod in the Set throughout the Pod's lifecycle.
+Above, when you got Stateful Set's Pods using, you saw two Pods, `web-0` and 
+`web-1`. The Pods names take the form `$(statefulset name)-$(ordinal index)`.
+The ordinal index, assinged by the Stateful Set controller, is unique to the
+Pod, and it uniquely identifies the Pod in the Set throughout the Pod's 
+lifecycle.
 
 ##### Network Identity
 
@@ -162,8 +161,7 @@ their A records may change. This will be explored further in the
 
 ##### Stable Storage
 
-Use [`kubectl get`](/docs/user-guide/kubectl/kubectl_get/) to get the 
-Pods' Persistent Volumes Claims. These are created based on the 
+Get the Pods' Persistent Volumes Claims. These are created based on the 
 `volumeClaimsTemplate` field in the Stateful Set's `spec`. 
 
 ```shell
@@ -174,8 +172,8 @@ www-web-1   Bound     pvc-88445cb0-b03b-11e6-adfc-42010a800002   1Gi        RWO 
 ```
 
 The Persisteng Volume Cliams have resulted in the provisioning of two 
-Persistent Volumes. Use [`kubectl get`](/docs/user-guide/kubectl/kubectl_get/) 
-to view them.
+Persistent Volumes. Use the identifiers of the Persistent Volume Cliams to get 
+the Persistent Volumes.
 
 ```shell
 $ kubectl get pv pvc-883e5172-b03b-11e6-adfc-42010a800002 pvc-88445cb0-b03b-11e6-adfc-42010a800002
@@ -190,8 +188,7 @@ The containers NGINX webservers, by default, will serve an index file at
 Stateful Sets `spec` ensures that the `/usr/share/nginx/html` directory is 
 backed by a Persistent Volume.
 
-Use [`kubectl exec`](/docs/user-guide/kubectl/kubectl_exec/) to write the 
-Pods' hostnames to their `index.html` files and to verify that the NGINX 
+Write the Pods' hostnames to their `index.html` files and verify that the NGINX 
 webservers serve the hostnames.
 
 ```shell
@@ -233,9 +230,9 @@ $ kubectl delete pod -l app=nginx
 pod "web-0" deleted
 pod "web-1" deleted
 ```
-Use [`kubectl get`](/docs/user-guide/kubectl/kubectl_get/) to watch 
-the Pods being relaunched (You may want to do this in a separate terminal while 
-you delete the pods). 
+Use [`kubectl get`](/docs/user-guide/kubectl/kubectl_get/), with the `-w` parameter, 
+to watch the Pods being relaunched (You may want to do this in a separate 
+terminal while you delete the pods). 
 
 ```shell
 $kubectl get -w pod -l app=nginx
@@ -248,9 +245,8 @@ web-1     0/1       Pending   0         0s
 web-1     0/1       ContainerCreating   0         0s
 web-1     1/1       Running   0         6s
 ```
-Once all the Pods are Running agian, you can look at their hostnames and 
-in-cluster DNS entries using the same method you did in the 
-[Network Identity](#network-identity) section.
+Once all the Pods are Running agian, examine their hostnames and in-cluster 
+DNS entries.
 
 ```shell
 $ for i in 0 1; do kubectl exec web-$i -- sh -c 'hostname'; done
@@ -275,14 +271,14 @@ Address 1: 10.244.3.6
 
 The Pods' ordinals, hostnames, SRV records, and A record names have not changed, 
 but the IP addresses associated with the Pods may have changed. In the cluster 
-used for this turorial they have. This is why it is not to important configure 
+used for this turorial, they have. This is why it is important not to configure 
 other applications to connect to Pods in a Stateful Set by IP address.
 
 If you need to find and connect to the active members of a Stateful Set, you 
 should query the CNAME of the Headless Service 
 (e.g. `nginx.default.svc.cluster.local`). The SRV records associated with the 
-CNAME will contains only the Pods in the Stateful Set that have passed their 
-readiness check.
+CNAME will contains only the Pods in the Stateful Set that are Running and 
+Ready.
 
 Alternatively, if you only need a predefined set of addresses, for instance if 
 your application already implements connection logic that tests for 
@@ -290,9 +286,7 @@ liveness and readiness, you should use the SRV records of the Pods in the
 Stateful Set (e.g `web-0.nginx.default.svc.cluster.local`, 
 `web-1.nginx.default.svc.cluster.local`).
 
-Use [`kubectl exec`](/docs/user-guide/kubectl/kubectl_exec/) to examine 
-the updates you made to the index.html files in the 
-[Creating a Stateful Set](#creating-a-stateful-set) section.
+Examine the data served by the Pods' webservers.
 
 ```shell
 $ for i in 0 1; do kubectl exec -it web-$i -- curl localhost; done
@@ -316,8 +310,7 @@ not delete any of its Pods.
 $ kubectl delete statefulset web --cascade=false
 ```
 
-Use [`kubectl get`](/docs/user-guide/kubectl/kubectl_get/) to examine the status
-of the Pods.
+Get the Pods to examine their status.
 
 ```shell
 $ kubectl get pods -l app=nginx
@@ -326,16 +319,15 @@ web-0     1/1       Running   0          56m
 web-1     1/1       Running   0          56m
 ```
 
-All of the Pods are still running. Use 
-[`kubectl delete`](/docs/user-guide/kubectl/kubectl_delete/) again to delete
-the `web-0` Pod.
+Even though `web` has been deleted, all of the Pods are still running. Delete 
+`web-0`.
 
 ```shell
 $ kubectl delete pod web-0
 pod "web-0" deleted
 ```
 This time, when you get the Pods that the Stateful Set created, you will find
-only `web-1`. As the web Stateful Set has been deleted, `web-0` will not 
+only `web-1`. As the `web` Stateful Set has been deleted, `web-0` will not 
 be rescheduled.
 
 ```shell
@@ -347,7 +339,7 @@ web-1     1/1       Running   0          59m
 Recreate the Stateful Set using the same command you did in the 
 [Creating a Stateful Set](#creating-a-stateful-set) section. Note that, unless
 you deleted the `nginx` Service ( which you should not have ), you will see 
-an Error indicating that the Service already exists.
+an error indicating that the Service already exists.
 
 ```shell
 kubectl create -f web.yaml 
@@ -366,12 +358,12 @@ web-0     1/1       Running   0          4m
 web-1     1/1       Running   0          1h
 ```
 
-Notice that the `web-0` was recreated, but `web-1` was left untouched. When the 
+Notice that `web-0` was recreated, but `web-1` was left untouched. When the 
 Stateful Set was recreated, it repaired the state of the set by relaunching 
 `web-0`,but, since `web-1` was already running, it adopdted this Pod.
 
-Let's take another look at the contents of the index.html Pods' NGINX 
-webservers.
+Let's take another look at the contents of the `index.html` file served by the 
+Pods' webservers.
 
 ```shell
 $ for i in 0 1; do kubectl exec -it web-$i -- curl localhost; done
@@ -380,10 +372,10 @@ web-1
 ```
 
 Even though we deleted both the Stateful Set and the `web-0` Pod, it still 
-serves the hostname you originally entered into its index.html. This is because 
+serves the hostname you originally entered into its `index.html`. This is because 
 the Stateful Set never deletes the Persistent Volumes associated with a Pod. 
 When you recreated the Stateful Set and it relaunched `web-0`, its original 
-Persistent Volume was attached.
+Persistent Volume was remounted.
 
 #### Cascading Delete
 
@@ -395,22 +387,27 @@ $ kubectl delete statefulset web
 statefulset "web" deleted
 ```
 
-This time, [`kubectl get`](/docs/user-guide/kubectl/kubectl_get/) retrieves 
-no Pods assoicated with the Stateful Set 
+Attempt to get the Stateful Set's Pods. 
 
 ```shell
 $ kubectl get pods -l app=nginx
 No resources found.
 ```
 
-Note that, you must also explicity delete the nginx Headless Service.
+This time no resources are found. A cascading delete will delete the Stateful 
+Set, along with all of its Pods.
+
+Note that, while a cascading delete will delete the Stateful Set and its Pods, 
+it will not delete the Headless Service associated with the Sateful Set. You
+must delete the `nginx` Service manually.
+
 ```shell
 $ kubectl delete service nginx
 service "nginx" deleted
 ```
 
-Recreate the Stateful Set and Headless Service one more time, and inspect the 
-contents of the index.html you created.
+Recreate the Stateful Set and Headless Service one more time, and inspect 
+contents served by the Pods' webservers.
 
 ```shell
 kubectl create -f web.yaml 
@@ -427,27 +424,25 @@ Pods are recreated with their Persistent Volumes mounted.
 
 ### Updating a Stateful Set
 
-You can't update any field of the Stateful except for `replicas` and 
+You can't update any field of the Stateful Set except for `replicas` and 
 `containers` in the podTemplate. Updating `replicas` will scale the Set.
 Updating `containers` can be used to update the Stateful Set's Pods, but the 
 updates are only applied when the Pods are rescheduled.
 
 #### Scaling a Stateful Set
 
-You can scale a Stateful Set by updating the "replicas" field. This will cause 
-the Stateful Set controller to do one of the following.
+You can scale a Stateful Set by updating the `replicas` field. Stateful Sets
+offer the following garuantees with respect to deployment and sclaing.
 
-1. Create one Pod at a time, in order from {0..N-1}, 
-  and wait till each one is in [Running and Ready](/docs/user-guide/pod-states) 
-  before creating the next.
-2. Delete one Pod at a time, in reverse order from {N-1..0},
- and wait till each one is completely shutdown 
- (past its [terminationGracePeriodSeconds](/docs/user-guide/pods/index#termination-of-pods)) 
- before deleting the next.
+* For a Stateful Set with N replicas, when Pods are being deployed, they are created sequentially, in order from {0..N-1}. 
+* When Pods are being deleted, they are terminated in reverse order, from {N-1..0}.
+* Before a scaling operation is applied to a Pod, all of its predecessors must be Running and Ready. 
+* Before a Pod is terminated, all of its successors must be completely shutdown.
 
 Use [`kubectl scale`](/docs/user-guide/kubectl/kubectl_scale/) to scale the 
 replicas, and use [`kubectl get`](/docs/user-guide/kubectl/kubectl_get/) to watch 
-the scaling operations progress.
+the scaling operation progress (You may want to watch the progress from a 
+separate terminal window).
 
 ```shell
 $ kubectl scale statefulset web --replicas=5
@@ -472,21 +467,21 @@ web-4     0/1       ContainerCreating   0         0s
 web-4     1/1       Running   0         19s
 ```
 
-You can also use [`kubectl patch`](/docs/user-guide/kubectl/kubectl_pacth/) to 
-achieve the same effect.
+As the Stateful Set controller scaled the number of replicas, it 
+created each Pod sequentially, waiting each Pod's predecessor to be Running and 
+Ready before launching the subsequent Pod.
+
+Note that you can also use 
+[`kubectl patch`](/docs/user-guide/kubectl/kubectl_pacth/) to achieve the same 
+effect.
 
 ```shell
 $ kubectl patch statefulset web -p '{"spec":{"replicas":3}}'
 "web" patched
 ```
 
-As the Stateful Set controller scaled the number of replicas, it 
-creates each Pod sequentially, waiting each Pod's predecessor to be Running and 
-Ready before launching the subsequent Pod.
-
-Use [`kubectl scale`](/docs/user-guide/kubectl/kubectl_scale/) to scale the 
-Stateful Set back down to 3 replicas, and use
-[`kubectl get`](/docs/user-guide/kubectl/kubectl_get/) to watch the Set's Pods.
+Scale the Stateful Set back down to 3 replicas and watch the scale down 
+process.
 
 ```shell
 $ kubectl scale statefulset web --replicas=3
@@ -509,14 +504,13 @@ web-3     1/1       Terminating   0         42s
 
 ```
 
-The controller deleted one Pod at a time in reverse order from, and it waited 
+The controller deleted one Pod at a time in reverse order, and it waited 
 for each to be completely shutdown 
 (past its [terminationGracePeriodSeconds](/docs/user-guide/pods/index#termination-of-pods)) 
 before deleting the next.
 
-Use [`kubectl get`](/docs/user-guide/kubectl/kubectl_get/) to get the Statefuls 
-Sets Persistent Volume Claims. Note that we still have five Persistent Volume 
-Claims and five Persistent Volumes.
+Get the Statefuls Sets Persistent Volume Claims. Note that we still have five 
+Persistent Volume Claims and five Persistent Volumes.
 
 ```shell
 $ kubectl get pvc -l app=nginx
@@ -542,9 +536,7 @@ Stateful Set's Pods one by one, the Stateful Set controller will recreate
 each Pod with the new image.
 
 Use [`kubectl patch`](/docs/user-guide/kubectl/kubectl_pacth/) to update the 
-container image for the Stateful Set, and use 
-[`kubectl delete`](/docs/user-guide/kubectl/kubectl_delete/) to delete `web-0`.
-
+container image for the Stateful Set and then delete `web-0`.
 
 ```shell
 $ kubectl patch statefulset web --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/image", "value":"gcr.io/google_containers/nginx-slim:0.7"}]'
@@ -554,29 +546,17 @@ $ kubectl delete pod web-0
 pod "web-0" deleted
 ```
 
-Use [`kubectl get`](/docs/user-guide/kubectl/kubectl_get/) to view the Pods'
-container images.
+Get the Pods to view their container images.
 
 ```shell{% raw %}
-$ for p in 0 1 2; do kubectl get po web-$p --template '{{range $i, $c := .spec.containers}}{{$c.image}}{{end}}'; echo; done
-gcr.io/google_containers/nginx-slim:0.8
-gcr.io/google_containers/nginx-slim:0.8
-gcr.io/google_containers/nginx-slim:0.8
-
-$ kubectl delete po web-0
-pod "web-0" deleted
-
 $ for p in 0 1 2; do kubectl get po web-$p --template '{{range $i, $c := .spec.containers}}{{$c.image}}{{end}}'; echo; done
 gcr.io/google_containers/nginx-slim:0.7
 gcr.io/google_containers/nginx-slim:0.8
 gcr.io/google_containers/nginx-slim:0.8
 {% endraw %}```
 
-To complete the image update, use use 
-[`kubectl delete`](/docs/user-guide/kubectl/kubectl_delete/) to delete `web-0`
-to delete the remianing two Pods, and use 
-[`kubectl get`](/docs/user-guide/kubectl/kubectl_get/) to watch the update 
-progress.
+To complete the image update, delete the remianing two Pods, and watch the 
+upgrade progress.
 
 ```shell
 $ kubectl delete pod web-1 web-2
@@ -603,9 +583,8 @@ web-2     0/1       ContainerCreating   0         0s
 web-2     1/1       Running   0         36s
 ```
 
-Once all the Pods are Running and Ready, use 
-[`kubectl get`](/docs/user-guide/kubectl/kubectl_get/) to view the images used 
-for the Pods' containers.
+Once all the Pods are Running and Ready, get the Pods to view the container 
+images.
 
 ```shell{% raw %}
 $ for p in 0 1 2; do kubectl get po web-$p --template '{{range $i, $c := .spec.containers}}{{$c.image}}{{end}}'; echo; done
