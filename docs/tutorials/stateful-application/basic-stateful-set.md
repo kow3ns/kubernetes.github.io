@@ -29,7 +29,7 @@ following Kubernetes concepts.
 * [kubeclt CLI](/docs/user-guide/kubectl)
 
 This tutorial assumes that your cluster is configured to dynamically provision 
-and reclaim Persistent Volumes. If your cluster is not configured to do so, you
+and Persistent Volumes. If your cluster is not configured to do so, you
 will have to manually provision five 1 GiB volumes prior to starting this 
 tutorial.
 {% endcapture %}
@@ -45,7 +45,7 @@ example throughout this tutorial.
 After this tutorial, you will be familiar with the following.
 
 * How to create a Stateful Set
-* How Stateful Set manages its Pods
+* How a Stateful Set manages its Pods
 * How to delete a Stateful Set
 * How to scale a Stateful Set
 * How to update the container image of a Stateful Set's Pods
@@ -97,9 +97,9 @@ web       2         1         20s
 #### Ordered Pod Creation
 
 For a Stateful Set with N replicas, when Pods are being deployed, they are 
-created sequentially, in order from {0..N-1}. Examine the standard output 
-stream in the first terminal. Eventually, the output will look like the example 
-below.
+created sequentially, in order from {0..N-1}. Examine the output of the 
+`kubectl get` command in the first terminal. Eventually, the output will 
+look like the example below.
 
 ```shell
 $ kubectl get pods -w -l app=nginx
@@ -143,7 +143,7 @@ replicas, it creates two Pods, `web-0` and `web-1`.
 #### Stable Network Identity
 Each Pod has a stable hostname based on its ordinal index. Use
 [`kubectl exec`](/docs/user-guide/kubectl/kubectl_exec/) to execute the 
-`hostname` command in each Pod and view its hostname. 
+`hostname` command in each Pod. 
 
 ```shell
 $ for i in 0 1; do kubectl exec web-$i -- sh -c 'hostname'; done
@@ -249,11 +249,6 @@ Stateful Set (e.g `web-0.nginx.default.svc.cluster.local`,
 
 #### Stable Storage
 
-The containers NGINX webservers, by default, will serve an index file at 
-`/usr/share/nginx/html/index.html`. The `volumeMounts` field in the 
-Stateful Sets `spec` ensures that the `/usr/share/nginx/html` directory is 
-backed by a [Persistent Volume](/docs/user-guide/volumes/).
-
 Get the Persistent Volume Claims for `web-0` and `web-1`.
 
 ```shell
@@ -263,9 +258,14 @@ www-web-0   Bound     pvc-15c268c7-b507-11e6-932f-42010a800002   1Gi        RWO 
 www-web-1   Bound     pvc-15c79307-b507-11e6-932f-42010a800002   1Gi        RWO           48s
 ```
 The Stateful Set controller created two Persistent Volume Claims that are 
-bound to two Persistent Volumes. As the cluster used in this tutorial is
-configured to dynamically provision Persistent Volumes, the 
+bound to two [Persistent Volume](/docs/user-guide/volumes/). As the cluster used 
+in this tutorial is configured to dynamically provision Persistent Volumes, the 
 Persistent Volumes were created and bound automatically.
+
+The containers NGINX webservers, by default, will serve an index file at 
+`/usr/share/nginx/html/index.html`. The `volumeMounts` field in the 
+Stateful Sets `spec` ensures that the `/usr/share/nginx/html` directory is 
+backed by a Persistent Volume.
 
 Write the Pods' hostnames to their `index.html` files and verify that the NGINX 
 webservers serve the hostnames.
@@ -278,21 +278,21 @@ web-0
 web-1
 ```
 
-In one terminal watch the Stateful Set's Pods.
+In one terminal, watch the Stateful Set's Pods.
 
 ```shell
 kubectl get pod -w -l app=nginx
 ```
 
-In another terminal delete all of the Stateful Set's Pods.
+In a second terminal, delete all of the Stateful Set's Pods.
 
 ```shell
 $ kubectl delete pod -l app=nginx
 pod "web-0" deleted
 pod "web-1" deleted
 ```
-
-Wait for all of the Pods to transition to Running and Ready.
+Examine the output of the `kubectl get` command in the first terminal, and wait 
+for all of the Pods to transition to Running and Ready.
 
 ```shell
 $ kubectl get pod -w -l app=nginx
@@ -344,7 +344,8 @@ $ kubectl scale statefulset web --replicas=5
 statefulset "web" scaled
 ```
 
-Wait for the three additional Pods to transition to Running and Ready.
+Examine the output of the `kubectl get` command in the first terminal, and wait 
+for the three additional Pods to transition to Running and Ready.
 
 ```shell
 $kubectl get pods -w -l app=nginx
@@ -430,7 +431,8 @@ There are still five Persistent Volume Claims and five Persistent Volumes.
 When exploring a Pod's [stable storage](#stable-storage), we saw that the 
 Persistent Volumes mounted to the Pods of a Stateful Set are not deleted when 
 the Stateful Set's Pods are deleted. This is still true when Pod deletion is 
-caused by scaling the Stateful Set down. 
+caused by scaling the Stateful Set down. This feature can be used to facilitate 
+upgrading the container images of Pods in a Stateful Set.
 
 ### Upgrading Container Images
 
@@ -531,6 +533,7 @@ deleted.
 #### Non-Cascading Delete
 
 In one terminal window, watch the Pods in the Stateful Set.
+
 ```
 $ kubectl get pods -w -l app=nginx
 ```
@@ -575,12 +578,12 @@ web-2     1/1       Running   0          7m
 As the `web` Stateful Set has been deleted, `web-0` has not been relaunched.
 
 In one terminal, watch the Stateful Set's Pods.
+
 ```
 $ kubectl get pods -w -l app=nginx
 ```
 
-Recreate the Stateful Set using the same command you did in the 
-[Creating a Stateful Set](#creating-a-stateful-set) section. Note that, unless
+In a second terminal, recreate the Stateful Set. Note that, unless
 you deleted the `nginx` Service ( which you should not have ), you will see 
 an error indicating that the Service already exists.
 
@@ -593,7 +596,7 @@ Error from server (AlreadyExists): error when creating "web.yaml": services "ngi
 Ignore the error. It only indicates that an attempt was made to create the nginx
 Headless Service even though that Service already exists. 
 
-Examine the output in the standard output stream of the first terminal.
+Examine the output of the `kubectl get` command running in the first terminal.
 
 ```shell
 kubectl get pods -w -l app=nginx
@@ -612,7 +615,7 @@ web-2     0/1       Terminating   0         3m
 ```
 
 When the `web` Stateful Set was recreated, it first relaunched `web-0`. 
-Since `web-` was already Running and Ready, when `web-0` transitioned to
+Since `web-1` was already Running and Ready, when `web-0` transitioned to
  Running and Ready, it simply adopted this Pod. Since we recreated the Stateful 
  Set with `replicas` equal to 2, once `web-0` had been recreated, and once 
  `web-1` had been determined to already be Running and Ready, `web-2` was 
@@ -636,6 +639,7 @@ Persistent Volume was remounted.
 #### Cascading Delete
 
 In one terminal window, watch the Pods in the Stateful Set.
+
 ```shell
 $ kubectl get pods -w -l app=nginx
 ```
@@ -647,8 +651,8 @@ In another terminal, delete the Stateful Set again. This time, omit the
 $ kubectl delete statefulset web
 statefulset "web" deleted
 ```
-
-Wait for all of the Pods to transition to Terminating.
+Examine the output of the `kubectl get` command running in the first terminal, 
+and wait for all of the Pods to transition to Terminating.
 
 ```shell
 $ kubectl get pods -w -l app=nginx
@@ -668,7 +672,7 @@ web-1     0/1       Terminating   0         29m
 ```
 
 As we saw in the [Scaling Down](#ordered-pod-termination) section, the Pods 
-are terminated one at a time, with respect to the reverse order of there ordinal 
+are terminated one at a time, with respect to the reverse order of their ordinal 
 indices, and, before terminating a Pod, the Stateful Set controller waits for 
 the Pod's successor to be completely terminated.
 
@@ -689,9 +693,8 @@ service "nginx" created
 statefulset "web" created
 ```
 
-Watch the Stateful Set's Pods, and wait for all of them to transition to 
-Running and Ready.
-
+When all of the Stateful Set's Pods transition to Running and Ready, retrieve 
+thecontents of their `index.html` files.
 
 ```shell
 $ for i in 0 1; do kubectl exec -it web-$i -- curl localhost; done
