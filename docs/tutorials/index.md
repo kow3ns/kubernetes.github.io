@@ -18,6 +18,7 @@ The Tutorials section of the Kubernetes documentation is a work in progress.
 #### Stateful Applications
 
 * [Running a Single-Instance Stateful Application](/docs/tutorials/stateful-application/run-stateful-application/)
+* [Stateful Set Basics](/docs/tutorials/stateful-application/basic-stateful-set/)
 
 ### What's next
 
