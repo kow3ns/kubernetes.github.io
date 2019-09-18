@@ -1,5 +1,5 @@
 ---
-approvers:
+reviewers:
 - lavalamp
 - thockin
 title: Cluster Management
@@ -22,6 +22,11 @@ To install Kubernetes on a set of machines, consult one of the existing [Getting
 The current state of cluster upgrades is provider dependent, and some releases may require special care when upgrading. It is recommended that administrators consult both the [release notes](https://git.k8s.io/kubernetes/CHANGELOG.md), as well as the version specific upgrade notes prior to upgrading their clusters.
 
 * [Upgrading to 1.6](/docs/admin/upgrade-1-6)
+
+### Upgrading an Azure Kubernetes Service (AKS) cluster
+
+Azure Kubernetes Service enables easy self-service upgrades of the control plane and nodes in your cluster. The process is
+currently user-initiated and is described in the [Azure AKS documentation](https://docs.microsoft.com/en-us/azure/aks/upgrade-cluster).
 
 ### Upgrading Google Compute Engine clusters
 
@@ -76,6 +81,11 @@ gcloud compute instance-groups managed resize kubernetes-minion-group --size=42 
 Instance Group will take care of putting appropriate image on new machines and start them, while Kubelet will register its Node with API server to make it available for scheduling. If you scale the instance group down, system will randomly choose Nodes to kill.
 
 In other environments you may need to configure the machine yourself and tell the Kubelet on which machine API server is running.
+
+### Resizing an Azure Kubernetes Service (AKS) cluster
+
+Azure Kubernetes Service enables user-initiated resizing of the cluster from either the CLI or the Azure Portal and is described in the [Azure AKS documentation](https://docs.microsoft.com/en-us/azure/aks/scale-cluster).
+
 
 ### Cluster autoscaling
 

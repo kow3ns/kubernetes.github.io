@@ -1,5 +1,5 @@
 ---
-approvers:
+reviewers:
 - lavalamp
 - davidopp
 - derekwaynecarr
@@ -329,7 +329,7 @@ When the admission controller sets a compute resource request, it does this by *
 the pod spec rather than mutating the `container.resources` fields.
 The annotations added contain the information on what compute resources were auto-populated.
 
-See the [InitialResouces proposal](https://git.k8s.io/community/contributors/design-proposals/autoscaling/initial-resources.md) for more details.
+See the [InitialResources proposal](https://git.k8s.io/community/contributors/design-proposals/autoscaling/initial-resources.md) for more details.
 
 ### LimitPodHardAntiAffinity
 
@@ -354,7 +354,7 @@ webhooks are called in serial; each one may modify the object if it desires.
 This admission controller (as implied by the name) only runs in the mutating phase.
 
 If a webhook called by this has side effects (for example, decrementing quota) it
-*must* have a reconcilation system, as it is not guaranteed that subsequent
+*must* have a reconciliation system, as it is not guaranteed that subsequent
 webhooks or validating admission controllers will permit the request to finish.
 
 If you disable the MutatingAdmissionWebhook, you must also disable the
@@ -565,7 +565,7 @@ fails. This admission controller only runs in the validation phase; the webhooks
 mutate the object, as opposed to the webhooks called by the `MutatingAdmissionWebhook` admission controller.
 
 If a webhook called by this has side effects (for example, decrementing quota) it
-*must* have a reconcilation system, as it is not guaranteed that subsequent
+*must* have a reconciliation system, as it is not guaranteed that subsequent
 webhooks or other validating admission controllers will permit the request to finish.
 
 If you disable the ValidatingAdmissionWebhook, you must also disable the

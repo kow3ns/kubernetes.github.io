@@ -1,5 +1,5 @@
 ---
-approvers:
+reviewers:
 - erictune
 - lavalamp
 - ericchiang
@@ -185,7 +185,7 @@ talk to the API server. Accounts may be explicitly associated with pods using th
 NOTE: `serviceAccountName` is usually omitted because this is done automatically.
 
 ```
-apiVersion: apps/v1beta2
+apiVersion: apps/v1 # this apiVersion is relevant as of Kubernetes 1.9
 kind: Deployment
 metadata:
   name: nginx-deployment
@@ -373,7 +373,7 @@ users:
         refresh-token: q1bKLFOyUiosTfawzA93TzZIDzH2TNa2SMm0zEiPKTUwME6BkEo6Sql5yUWVBSWpKUGphaWpxSVAfekBOZbBhaEW+VlFUeVRGcluyVF5JT4+haZmPsluFoFu5XkpXk5BXq
       name: oidc
 ```
-Once your `id_token` expires, `kubectl` will attempt to refresh your `id_token` using your `refresh_token` and `client_secret` storing the new values for the `refresh_token` and `id_token` in your `kube/.config`.
+Once your `id_token` expires, `kubectl` will attempt to refresh your `id_token` using your `refresh_token` and `client_secret` storing the new values for the `refresh_token` and `id_token` in your `.kube/config`.
 
 
 ##### Option 2 - Use the `--token` Option
@@ -650,6 +650,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: scopes-impersonator
+rules:
 # Can set "Impersonate-Extra-scopes" header.
 - apiGroups: ["authentication.k8s.io"]
   resources: ["userextras/scopes"]
@@ -674,7 +675,7 @@ rules:
 # Can impersonate the groups "developers" and "admins"
 - apiGroups: [""]
   resources: ["groups"]
-- verbs: ["impersonate"]
+  verbs: ["impersonate"]
   resourceNames: ["developers","admins"]
 
 # Can impersonate the extras field "scopes" with the values "view" and "development"

@@ -1,5 +1,5 @@
 ---
-approvers:
+reviewers:
 - thockin
 - caseydavenport
 - danwinship
@@ -186,3 +186,4 @@ This ensures that even pods that aren't selected by any other NetworkPolicy will
 
 - See the [Declare Network Policy](/docs/tasks/administer-cluster/declare-network-policy/)
   walkthrough for further examples.
+- See more [Recipes](https://github.com/ahmetb/kubernetes-network-policy-recipes) for common scenarios enabled by the NetworkPolicy resource.
